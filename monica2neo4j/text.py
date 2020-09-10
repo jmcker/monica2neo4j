@@ -80,8 +80,12 @@ def generate_queries(contacts):
     company_query = f'''CREATE {', '.join(company_nodes)}'''
 
     all_queries = []
-    all_queries.append(contact_query)
-    all_queries.append(company_query)
+
+    if (len(contact_nodes) > 0):
+        all_queries.append(contact_query)
+    if (len(company_nodes) > 0):
+        all_queries.append(company_query)
+
     all_queries.extend(relationships)
 
     return all_queries
