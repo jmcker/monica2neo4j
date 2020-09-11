@@ -4,26 +4,6 @@ import neo4j
 
 from .generate import generate_contacts
 
-PROPS = [
-    'id',
-    'hash_id',
-    'first_name',
-    'last_name',
-    'nickname',
-    'gender',
-    'gender_type',
-    ('information', 'career', 'company'),
-    ('information', 'career', 'job'),
-    ('information', 'dates', 'birthdate', 'date'),      # TODO: 'date' is a duplicate key and gets overriden
-    ('information', 'dates', 'deceased_date', 'date'),
-    'is_active',
-    'is_dead',
-    'url'
-]
-
-PERSON_T = 'Person'
-COMPANY_T = 'Company'
-
 class Neo4jConnection():
 
     def __init__(self, uri, user, password):

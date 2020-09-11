@@ -27,6 +27,8 @@ COMPANY_T = 'Company'
 
 # Relationship types
 WORK_REL_T = 'work'
+ORG_REL_T = 'organization'
+TAG_REL_T = 'tag'
 
 def generate_contacts(contacts):
     '''
@@ -61,9 +63,13 @@ def generate_contact(contact_api_obj):
     # Normal Monica relationships
     relationship_queries = generate_relationships(contact_api_obj, contact_api_obj['information']['relationships'])
 
+    # Tags
+    tag_queries = generate_tag_relationships(contact_api_obj, contact_api_obj['tags'])
+
     queries.add(contact_query)
     queries.update(company_queries)
     queries.update(relationship_queries)
+    queries.update(tag_queries)
 
     return queries
 
@@ -109,9 +115,6 @@ def generate_relationship(api_obj_is, relationship, of_api_obj, rel_group_type=N
     if (relationship_name is None):
         relationship_name = ''
 
-    if (node_id_is == 22):
-        print(relationship)
-
     relationship_name = relationship_name.upper()
     relationship_name = relationship_name.replace(' ', '_')
     relationship_name = relationship_name.replace('-', '_')
@@ -125,6 +128,63 @@ def generate_relationship(api_obj_is, relationship, of_api_obj, rel_group_type=N
     ]
 
     return '\n'.join(query_parts)
+
+def generate_tag_relationships(api_obj, tag_api_objects):
+    '''
+    Handle creating and adding relationhips between a tag
+    and another API object (usually a contact).
+    '''
+
+    queries = set()
+
+    for tag_api_object in tag_api_objects:
+        tag_queries = generate_tag_relationship(api_obj, tag_api_object)
+
+        queries.update(tag_queries)
+
+    return queries
+
+def generate_tag_relationship(api_obj, tag_api_object):
+    '''
+    Handle creating and adding the relationhips between a tag
+    and another API object (usually a contact).
+    '''
+
+    queries = set()
+
+    tag_query = generate_node(tag_api_object)
+
+    # Tag -> API Object
+    tag_rel = {
+        'id': hash(TAG_REL_T),
+        'name': 'INCLUDES'
+    }
+
+    tag_rel_query = generate_relationship(
+        tag_api_object,
+        tag_rel,
+        api_obj,
+        rel_group_type=TAG_REL_T
+    )
+
+    # API Object -> Tag
+    obj_rel = {
+        'id': hash(TAG_REL_T),
+        'name': 'PART_OF'
+    }
+
+    obj_rel_query = generate_relationship(
+        api_obj,
+        obj_rel,
+        tag_api_object,
+        rel_group_type=TAG_REL_T
+    )
+
+    queries.add(tag_query)
+    queries.add(tag_rel_query)
+    queries.add(obj_rel_query)
+
+    return queries
 
 def generate_company_relationships(api_obj, career_api_obj):
     '''
@@ -164,12 +224,12 @@ def generate_company_relationships(api_obj, career_api_obj):
         api_obj,
         job_rel_wrapper,
         career_api_obj,
-        rel_group_type=WORK_REL_T
+        rel_group_type=ORG_REL_T
     )
 
     # Company -> Employee
     company_rel_wrapper = {
-        'id': hash(WORK_REL_T),
+        'id': hash(ORG_REL_T),
         'name': 'INCLUDES'
     }
 
@@ -177,7 +237,7 @@ def generate_company_relationships(api_obj, career_api_obj):
         career_api_obj,
         company_rel_wrapper,
         api_obj,
-        rel_group_type=WORK_REL_T
+        rel_group_type=ORG_REL_T
     )
 
     queries.add(company_query)
