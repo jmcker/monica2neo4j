@@ -16,12 +16,14 @@ if (__name__ == '__main__'):
 
     client = MonicaApiClient(secrets['token'], base_url=monica_url)
     db = Neo4jConnection(neo4j_url, 'neo4j', secrets['neo4j_password'])
-    db.reset()
+    # db.reset(force=True)
 
-    contacts = client.contacts(use_iter=False)
+    # contacts = generate_contacts(use_iter=True)
     # queries = generate_contacts(contacts)
 
     # for query in queries:
     #     print(query)
 
-    db.ingest_contacts(contacts)
+    contacts_iter = client.contacts(use_iter=True)
+
+    db.ingest_contacts(contacts_iter)

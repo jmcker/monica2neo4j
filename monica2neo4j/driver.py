@@ -31,15 +31,17 @@ class Neo4jConnection():
 
                 print(f'Ran query #{i}')
 
-    def reset(self):
+    def reset(self, force=False):
         '''
         Remove all nodes and relationships form the database
         '''
 
-        confirm = str(input('Are you sure you want to remove all nodes and relationships? [y/N] '))
-        if (confirm.lower() not in {'y', 'yes'}):
-            print('Aborted')
-            sys.exit(1)
+        if (not force):
+            confirm = str(input('Are you sure you want to remove all nodes and relationships? [y/N] '))
+
+            if (confirm.lower() not in {'y', 'yes'}):
+                print('Aborted')
+                sys.exit(1)
 
         queries = ['MATCH(n) DETACH DELETE n']
         self.run_queries(queries)

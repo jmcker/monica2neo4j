@@ -1,3 +1,4 @@
+import hashlib
 import json
 
 PROPS = [
@@ -104,26 +105,31 @@ def generate_relationship(api_obj_is, relationship, of_api_obj, rel_group_type=N
     '''
 
     node_label_is = api_obj_is['object'].capitalize()
-    node_id_is = api_obj_is['id']
+    node_id_is = json.dumps(api_obj_is['id'])
 
     of_node_label = of_api_obj['object'].capitalize()
-    of_node_id = of_api_obj['id']
+    of_node_id = json.dumps(of_api_obj['id'])
 
     relationship_id = relationship['id']
     relationship_name = relationship['name']
+    relationship_name = relationship_name or ''
 
-    if (relationship_name is None):
-        relationship_name = ''
+    relationship_label = relationship_name.upper()
+    relationship_label = relationship_label.replace(' ', '_')
+    relationship_label = relationship_label.replace('-', '_')
 
-    relationship_name = relationship_name.upper()
-    relationship_name = relationship_name.replace(' ', '_')
-    relationship_name = relationship_name.replace('-', '_')
+    relationship_name = json.dumps(relationship_name)
     relationship_type = json.dumps(rel_group_type)
+
+    relationship_id_str = f'{{ id: {relationship_id} }}'
+    relationship_props_str = f'{{ id: {relationship_id}, type: {relationship_type}, name: {relationship_name} }}'
 
     query_parts = [
         f'MATCH (a:{node_label_is}), (b:{of_node_label})',
         f'WHERE a.id = {node_id_is} AND b.id = {of_node_id}',
-        f'CREATE (a)-[:{relationship_name} {{ id: {relationship_id}, type: {relationship_type} }}]->(b)',
+        f'MERGE (a)-[r:{relationship_label} {relationship_id_str}]->(b)',
+        f'ON CREATE SET r = {relationship_props_str}'
+        f'ON MATCH SET r = {relationship_props_str}'
         f'RETURN a, b'
     ]
 
@@ -156,7 +162,7 @@ def generate_tag_relationship(api_obj, tag_api_object):
 
     # Tag -> API Object
     tag_rel = {
-        'id': hash(TAG_REL_T),
+        'id': _hash(TAG_REL_T),
         'name': 'INCLUDES'
     }
 
@@ -169,7 +175,7 @@ def generate_tag_relationship(api_obj, tag_api_object):
 
     # API Object -> Tag
     obj_rel = {
-        'id': hash(TAG_REL_T),
+        'id': _hash(TAG_REL_T),
         'name': 'PART_OF'
     }
 
@@ -206,36 +212,39 @@ def generate_company_relationships(api_obj, career_api_obj):
     if (company_name is None and job_title is None):
         return queries
 
+    # If we've made it this far, we have a job, but no company
+    company_name = company_name or ''
+
     # Companies aren't officially objects in Monica
     # Fake it ourselves
-    career_api_obj['id'] = hash(company_name)
+    career_api_obj['id'] = _hash(company_name, escape=False)    # extract_props will escape this for us
     career_api_obj['object'] = COMPANY_T
     career_api_obj['name'] = company_name
 
     company_query = generate_node(career_api_obj)
 
     # Employee -> Company
-    job_rel_wrapper = {
-        'id': hash(company_name),
+    job_rel = {
+        'id': _hash(company_name),
         'name': 'PART_OF' if job_title is None else job_title
     }
 
     job_rel_query = generate_relationship(
         api_obj,
-        job_rel_wrapper,
+        job_rel,
         career_api_obj,
         rel_group_type=ORG_REL_T
     )
 
     # Company -> Employee
-    company_rel_wrapper = {
-        'id': hash(ORG_REL_T),
+    company_rel = {
+        'id': _hash(ORG_REL_T),
         'name': 'INCLUDES'
     }
 
     company_rel_query = generate_relationship(
         career_api_obj,
-        company_rel_wrapper,
+        company_rel,
         api_obj,
         rel_group_type=ORG_REL_T
     )
@@ -250,11 +259,17 @@ def generate_node(api_obj):
 
     node_label = api_obj['object'].capitalize()
     props = extract_props(api_obj)
+    id_str = props_to_str({'id': props['id']})
     props_str = props_to_str(props)
 
-    query = f'CREATE (n:{node_label} {props_str}) RETURN n'
+    query_parts = [
+        f'MERGE (n:{node_label} {id_str})',
+        f'ON CREATE SET n = {props_str}',
+        f'ON MATCH SET n = {props_str}'
+        f'RETURN n'
+    ]
 
-    return query
+    return '\n'.join(query_parts)
 
 def safe_walk(api_obj, keys):
 
@@ -295,7 +310,27 @@ def props_to_str(props):
 
     return f'''{{ {', '.join(prop_strs)} }}'''
 
+def _hash(content: str, escape=True):
+    '''
+    Python's `hash` function adds a random (per process)
+    salt before hashing to avoid attacks on their set/dict
+    implementation. We need consistency across processes, so
+    we must customize.
+
+    See:
+    - https://stackoverflow.com/a/27522708
+    - https://docs.python.org/3/reference/datamodel.html#object.__hash__
+    '''
+
+    m = hashlib.sha256(content.encode())
+
+    result = m.hexdigest()
+    if (escape):
+        result = json.dumps(result)
+
+    return result
+
 def _create_queries_first(query: str):
-    if (query.startswith('CREATE')):
+    if (query.startswith('CREATE') or query.startswith('MERGE')):
         return 1
     return 100
