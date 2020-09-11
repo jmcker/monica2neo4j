@@ -71,31 +71,38 @@ class MonicaApiClient():
     def me(self):
         return self.get('me')
 
-    def _gen(self, _iter):
-        yield from _iter
-
     def contacts(self, use_iter=True):
+
+        if (use_iter):
+            return self.contacts_iter()
+
+        results = []
+        for result in self.contacts_iter():
+            results.extend(result)
+
+        return results
+
+    def contacts_iter(self):
 
         next_page_callback = lambda page_num: self.get('contacts', page=page_num)
 
-        result = []
         for page in self.paged_resp(next_page_callback):
-            if (use_iter):
-                return self._gen(page['data'])
-            else:
-                result.extend(page['data'])
-
-        return result
+            yield from page['data']
 
     def tags(self, use_iter=True):
 
+        if (use_iter):
+            return self.tags_iter()
+
+        results = []
+        for result in self.tags_iter():
+            results.extend(result)
+
+        return results
+
+    def tags_iter(self):
+
         next_page_callback = lambda page_num: self.get('tags', page=page_num)
 
-        result = []
         for page in self.paged_resp(next_page_callback):
-            if (use_iter):
-                return self._gen(page['data'])
-            else:
-                result.extend(page['data'])
-
-        return result
+            yield from page['data']
