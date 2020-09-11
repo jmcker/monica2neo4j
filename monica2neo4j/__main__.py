@@ -4,7 +4,7 @@ from pprint import pprint
 from monica_client import MonicaApiClient
 
 from .driver import Neo4jConnection
-from .text import generate_queries
+from .generate import generate_contacts
 
 if (__name__ == '__main__'):
 
@@ -15,14 +15,13 @@ if (__name__ == '__main__'):
         secrets = json.load(f)
 
     client = MonicaApiClient(secrets['token'], base_url=monica_url)
+    db = Neo4jConnection(neo4j_url, 'neo4j', secrets['neo4j_password'])
+    db.reset()
 
-    contacts = list(client.contacts())
-    queries = generate_queries(contacts)
+    contacts = client.contacts(use_iter=False)
+    # queries = generate_contacts(contacts)
 
     # for query in queries:
     #     print(query)
 
-    conn = Neo4jConnection(neo4j_url, 'neo4j', secrets['neo4j_password'])
-    conn.reset_database()
-    conn.ingest_contacts(contacts)
-
+    db.ingest_contacts(contacts)

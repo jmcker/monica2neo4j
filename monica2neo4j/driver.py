@@ -1,6 +1,8 @@
+import sys
+
 import neo4j
 
-from .text import generate_queries
+from .generate import generate_contacts
 
 PROPS = [
     'id',
@@ -36,18 +38,36 @@ class Neo4jConnection():
         with self.driver.session() as session:
 
             for i, query in enumerate(queries):
-                session.run(query)
+                try:
+                    session.run(query)
+                except Exception as e:
+                    print('')
+                    print('Query failed:')
+                    print(str(e))
+                    print('')
+                    print('Query:')
+                    print(query)
+                    sys.exit(1)
+
                 print(f'Ran query #{i}')
 
-    def reset_database(self):
+    def reset(self):
+        '''
+        Remove all nodes and relationships form the database
+        '''
+
+        confirm = str(input('Are you sure you want to remove all nodes and relationships? [y/N] '))
+        if (confirm.lower() not in {'y', 'yes'}):
+            print('Aborted')
+            sys.exit(1)
 
         queries = ['MATCH(n) DETACH DELETE n']
         self.run_queries(queries)
 
     def ingest_contacts(self, contacts):
         '''
-        Clear the database and import the contacts/relationships/companies
+        Import contacts/relationships/companies
         '''
 
-        queries = generate_queries(contacts)
+        queries = generate_contacts(contacts)
         self.run_queries(queries)
