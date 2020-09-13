@@ -128,8 +128,8 @@ def generate_relationship(api_obj_is, relationship, of_api_obj, rel_group_type=N
         f'MATCH (a:{node_label_is}), (b:{of_node_label})',
         f'WHERE a.id = {node_id_is} AND b.id = {of_node_id}',
         f'MERGE (a)-[r:{relationship_label} {relationship_id_str}]->(b)',
-        f'ON CREATE SET r = {relationship_props_str}'
-        f'ON MATCH SET r = {relationship_props_str}'
+        f'ON CREATE SET r = {relationship_props_str}',
+        f'ON MATCH SET r = {relationship_props_str}',
         f'RETURN a, b'
     ]
 
@@ -265,7 +265,7 @@ def generate_node(api_obj):
     query_parts = [
         f'MERGE (n:{node_label} {id_str})',
         f'ON CREATE SET n = {props_str}',
-        f'ON MATCH SET n = {props_str}'
+        f'ON MATCH SET n = {props_str}',
         f'RETURN n'
     ]
 

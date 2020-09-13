@@ -29,7 +29,7 @@ class Neo4jConnection():
                     print(query)
                     sys.exit(1)
 
-                print(f'Ran query #{i}')
+                print(f'Completed query #{i}')
 
     def reset(self, force=False):
         '''
