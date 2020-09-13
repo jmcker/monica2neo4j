@@ -16,6 +16,11 @@ class MonicaApiClient():
         self.base_url = base_url
         self.version = version
 
+        try:
+            self.me()
+        except Exception as e:
+            raise MonicaApiError('Could not access the Monica API. Is your login correct?', e)
+
     def headers(self):
         return {
             'Content-Type': 'application/json',
@@ -23,6 +28,13 @@ class MonicaApiClient():
         }
 
     def process_json(self, resp):
+
+        if (len(resp.history) > 0 and 'api' not in resp.url):
+            raise MonicaApiError('Monica redirected away from /api. Login information may be invalid')
+
+        content_type = resp.headers.get('Content-Type', '')
+        if ('json' not in content_type):
+            raise MonicaApiError(f'Endpoint did not return JSON (got {content_type})')
 
         try:
             resp_json = resp.json()
