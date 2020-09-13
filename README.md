@@ -1,6 +1,6 @@
 # monica2neo4j #
 
-Create a Neo4j graph database using data from [Monica](https://github.com/monicahq/monica)
+Create a Neo4j graph database using details and relationships from [Monica](https://github.com/monicahq/monica)
 
 ### Setup ###
 
