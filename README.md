@@ -18,15 +18,15 @@ pip install -r requirements.txt
 
 ```console
 $ python -m monica2neo4j --help
-usage: monica2neo4j [-h] [--monica MONICA_BASE] [--neo4j NEO4J_URL] [--print]
-                    [--wipe] [--force]
+usage: monica2neo4j [-h] [--monica MONICA_BASE_URL] [--neo4j NEO4J_URL]
+                    [--print] [--wipe] [--force]
 
 Copy contact details and relationships from Monica to a Neo4j graph database
 
 optional arguments:
   -h, --help            show this help message and exit
-  --monica MONICA_BASE, -m MONICA_BASE
-                        HTTP(s) address of the desired Monica instance
+  --monica MONICA_BASE_URL, -m MONICA_BASE_URL
+                        HTTP(S) address of the desired Monica instance
   --neo4j NEO4J_URL, -n NEO4J_URL
                         Bolt address for the desired Neo4j instance
   --print, -p           Print the Neo4j queries instead of running them

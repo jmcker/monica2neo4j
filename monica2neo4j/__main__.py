@@ -14,7 +14,7 @@ if (__name__ == '__main__'):
     monica_base_url = 'https://monica.lan.symboxtra.com'
 
     parser = argparse.ArgumentParser('monica2neo4j', description='Copy contact details and relationships from Monica to a Neo4j graph database')
-    parser.add_argument('--monica', '-m', dest='monica_base', action='store', default=monica_base_url, help='HTTP(s) address of the desired Monica instance')
+    parser.add_argument('--monica', '-m', dest='monica_base_url', action='store', default=monica_base_url, help='HTTP(S) address of the desired Monica instance')
     parser.add_argument('--neo4j', '-n', dest='neo4j_url', action='store', default=neo4j_url, help='Bolt address for the desired Neo4j instance')
     parser.add_argument('--print', '-p', dest='print', action='store_true', help='Print the Neo4j queries instead of running them')
     parser.add_argument('--wipe', '-w', dest='wipe', action='store_true', help='Clear the ENTIRE database before populating it from Monica. ALL nodes and relationships will be removed')
@@ -22,7 +22,7 @@ if (__name__ == '__main__'):
 
     args = parser.parse_args()
 
-    monica_url = urljoin(args.monica_base + '/', 'api/')
+    monica_url = urljoin(args.monica_base_url + '/', 'api/')
 
     try:
         with open('secrets.json', 'r') as f:
