@@ -15,7 +15,7 @@ PROPS = [
     'description',
     ('information', 'career', 'company'),
     ('information', 'career', 'job'),
-    ('information', 'dates', 'birthdate', 'date'),      # TODO: 'date' is a duplicate key and gets overriden
+    ('information', 'dates', 'birthdate', 'date'),      # TODO: 'date' is a duplicate key and gets overridden
     ('information', 'dates', 'deceased_date', 'date'),
     'is_active',
     'is_dead',
@@ -62,10 +62,12 @@ def generate_contact(contact_api_obj):
     company_queries = generate_company_relationships(contact_api_obj, career_api_obj)
 
     # Normal Monica relationships
-    relationship_queries = generate_relationships(contact_api_obj, contact_api_obj['information']['relationships'])
+    relationship_groups = contact_api_obj['information']['relationships']
+    relationship_queries = generate_relationships(contact_api_obj, relationship_groups)
 
     # Tags
-    tag_queries = generate_tag_relationships(contact_api_obj, contact_api_obj['tags'])
+    tags = contact_api_obj['tags']
+    tag_queries = generate_tag_relationships(contact_api_obj, tags)
 
     queries.add(contact_query)
     queries.update(company_queries)
@@ -197,7 +199,7 @@ def generate_company_relationships(api_obj, career_api_obj):
     Handle creating and adding relationships between a company
     and another API object (usually a contact).
 
-    This requires some special handling since comapnies aren't
+    This requires some special handling since companies aren't
     actually objects in Monica.
     '''
 

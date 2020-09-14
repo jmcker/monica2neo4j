@@ -58,10 +58,11 @@ class MonicaApiClient():
         while (page <= total_pages):
 
             page_resp = next_page_callback(page)
-            yield page_resp
 
             if ('meta' not in page_resp or 'last_page' not in page_resp['meta']):
                 raise MonicaApiError('Paged result did not contain paging meta information')
+
+            yield page_resp
 
             total_pages = page_resp['meta']['last_page']
             page += 1
