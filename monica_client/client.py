@@ -89,11 +89,14 @@ class MonicaApiClient():
         if (use_iter):
             return self.contacts_iter()
 
-        results = []
-        for result in self.contacts_iter():
-            results.extend(result)
+        return list(self.contacts_iter())
 
-        return results
+    def tags(self, use_iter=True):
+
+        if (use_iter):
+            return self.tags_iter()
+
+        return list(self.tags_iter())
 
     def contacts_iter(self):
 
@@ -101,17 +104,6 @@ class MonicaApiClient():
 
         for page in self.paged_resp(next_page_callback):
             yield from page['data']
-
-    def tags(self, use_iter=True):
-
-        if (use_iter):
-            return self.tags_iter()
-
-        results = []
-        for result in self.tags_iter():
-            results.extend(result)
-
-        return results
 
     def tags_iter(self):
 
