@@ -106,6 +106,25 @@ WHERE
 RETURN p
 ```
 
+```js
+// Shortest Path
+// Find the shortest way that two people know each other
+// Exclude some types of relationships
+WITH
+  'Hannah' AS first_name_a,
+  'Helge' AS first_name_b
+MATCH p=shortestPath((a:Contact)-[r*..5]-(b:Contact))
+WHERE
+  a.first_name = first_name_a
+  AND b.first_name = first_name_b
+  AND none(
+    x in r WHERE
+      x.type IN ['tag']
+      OR x.name IN ['friend']
+  )
+RETURN p
+```
+
 
 
 **The following queries work/look much better if auto-join is turned off.**
