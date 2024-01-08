@@ -1,16 +1,18 @@
-import argparse
 import json
-from pprint import pprint
-from urllib.parse import urljoin
+import os
 
-from monica_client import MonicaApiClient
+import monica_client
 
 from .driver import Neo4jConnection
 from .generate import generate_contacts
 
 if __name__ == "__main__":
-    neo4j_url = "bolt://neo4j.lan.symboxtra.com:7687"
-    monica_base_url = "https://monica.lan.symboxtra.com"
+    import argparse
+
+    neo4j_url = os.environ.get(
+        "NEO4J_URL", "bolt+s://YOUR-OWN-ID.neo4jsandbox.com:7687"
+    )
+    monica_url = os.environ.get("MONICA_URL", monica_client.DEFAULT_URL)
 
     parser = argparse.ArgumentParser(
         "monica2neo4j",
@@ -19,9 +21,9 @@ if __name__ == "__main__":
     parser.add_argument(
         "--monica",
         "-m",
-        dest="monica_base_url",
+        dest="monica_url",
         action="store",
-        default=monica_base_url,
+        default=monica_url,
         help="HTTP(S) address of the desired Monica instance",
     )
     parser.add_argument(
@@ -56,14 +58,27 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    monica_url = urljoin(args.monica_base_url + "/", "api/")
-
     try:
-        with open("secrets.json", "r") as f:
-            secrets = json.load(f)
+        monica_url = args.monica_url
+        monica_token = os.environ.get("MONICA_TOKEN", None)
+        neo4j_url = args.neo4j_url
+        neo4j_user = os.environ.get("NEO4J_USER", "neo4j")
+        neo4j_password = os.environ.get("NEO4J_PASSWORD", None)
 
-        client = MonicaApiClient(secrets["token"], base_url=monica_url)
-        db = Neo4jConnection(args.neo4j_url, "neo4j", secrets["neo4j_password"])
+        if not all([monica_token, neo4j_user, neo4j_password]):
+            with open("secrets.json", "r") as f:
+                secrets = json.load(f)
+
+            if monica_token is None:
+                monica_token = secrets["MONICA_TOKEN"]
+            if neo4j_password is None:
+                neo4j_password = secrets["NEO4J_PASSWORD"]
+
+        client = monica_client.MonicaApiClient(monica_token, base_url=monica_url)
+        db = Neo4jConnection(neo4j_url, neo4j_user, neo4j_password)
+
+        client.test()
+        db.test()
 
         if args.wipe:
             db.reset(force=args.force)

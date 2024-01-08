@@ -2,7 +2,7 @@ import urllib.parse
 
 import requests
 
-DEFAULT_URL = "https://app.monicahq.com/api"
+DEFAULT_URL = "https://app.monicahq.com"
 DEFAULT_VERSION = "1.0"
 
 
@@ -13,9 +13,10 @@ class MonicaApiError(Exception):
 class MonicaApiClient:
     def __init__(self, token, base_url=DEFAULT_URL, version=DEFAULT_VERSION):
         self.token = token
-        self.base_url = base_url
+        self.base_url = urllib.parse.urljoin(base_url + "/", "api/")
         self.version = version
 
+    def test(self):
         try:
             self.me()
         except Exception as e:

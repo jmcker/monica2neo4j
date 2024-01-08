@@ -15,12 +15,8 @@ PROPS = [
     "description",
     ("information", "career", "company"),
     ("information", "career", "job"),
-    (
-        "information",
-        "dates",
-        "birthdate",
-        "date",
-    ),  # TODO: 'date' is a duplicate key and gets overridden
+    # TODO: 'date' is a duplicate key and gets overridden
+    ("information", "dates", "birthdate", "date"),
     ("information", "dates", "deceased_date", "date"),
     "is_active",
     "is_dead",
@@ -175,14 +171,20 @@ def generate_tag_relationship(api_obj, tag_api_object):
     tag_query = generate_node(tag_api_object)
 
     # Tag -> API Object
-    tag_rel = {"id": _hash(TAG_REL_T), "name": "INCLUDES"}
+    tag_rel = {
+        "id": _hash(TAG_REL_T),
+        "name": "INCLUDES",
+    }
 
     tag_rel_query = generate_relationship(
         tag_api_object, tag_rel, api_obj, rel_group_type=TAG_REL_T
     )
 
     # API Object -> Tag
-    obj_rel = {"id": _hash(TAG_REL_T), "name": "PART_OF"}
+    obj_rel = {
+        "id": _hash(TAG_REL_T),
+        "name": "PART_OF",
+    }
 
     obj_rel_query = generate_relationship(
         api_obj, obj_rel, tag_api_object, rel_group_type=TAG_REL_T
@@ -220,9 +222,8 @@ def generate_company_relationships(api_obj, career_api_obj):
 
     # Companies aren't officially objects in Monica
     # Fake it ourselves
-    career_api_obj["id"] = _hash(
-        company_name, escape=False
-    )  # extract_props will escape this for us
+    # `extract_props` will escape this for us
+    career_api_obj["id"] = _hash(company_name, escape=False)
     career_api_obj["object"] = COMPANY_T
     career_api_obj["name"] = company_name
 
@@ -239,7 +240,10 @@ def generate_company_relationships(api_obj, career_api_obj):
     )
 
     # Company -> Employee
-    company_rel = {"id": _hash(ORG_REL_T), "name": "INCLUDES"}
+    company_rel = {
+        "id": _hash(ORG_REL_T),
+        "name": "INCLUDES",
+    }
 
     company_rel_query = generate_relationship(
         career_api_obj, company_rel, api_obj, rel_group_type=ORG_REL_T

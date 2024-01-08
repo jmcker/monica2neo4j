@@ -12,6 +12,9 @@ class Neo4jConnection:
             uri, auth=neo4j.basic_auth(user, password)
         )
 
+    def test(self):
+        self.driver.verify_connectivity()
+
     def close(self):
         self.driver.close()
 
