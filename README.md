@@ -1,37 +1,59 @@
 # monica2neo4j #
 
-Create a Neo4j graph database using details and relationships from [Monica](https://github.com/monicahq/monica)
+Create a Neo4j graph database using details and relationships from [Monica](https://github.com/monicahq/monica).
+
+## Screenshots ##
+
+![Query Results Screenshot](docs/dark-example-with-employment.png)
+![Query Results Screenshot](docs/dark-season-2-episode-4.png)
+![Node Properties Screenshot](docs/node-properties.png)
 
 ## Setup ##
 
 ```bash
-# Dependencies
 virtualenv env
 source ./env/bin/activate
 pip install -r requirements.txt
 
 # TODO: setup secrets file/auth
 # Currently looks for secrets.json in the current directory
+# {
+#     "MONICA_TOKEN": "XXXXXXX",
+#     "NEO4J_PASSWORD": "XXXXXXXX"
+# }
 ```
+
+### Monica ###
+
+1. Create an account on [Monica](https://app.monicahq.com/) or host [your own](https://hub.docker.com/_/monica).
+1. Create a personal access token for your account: https://app.monicahq.com/settings/api
+1. Add it to `secrets.json` or set the environment variable `MONICA_TOKEN`.
+1. Verify access: `python -m monica_client`
+1. Try it out: `python -m monica2neo4j --print`
+
+### Neo4J ###
+
+1. Create an account on the [Neo4j sandbox](https://sandbox.neo4j.com/) or host a [Neo4j server](https://hub.docker.com/_/neo4j/).
+1. Create a node and put the password in `secrets.json` or set the environment variable `NEO4J_PASSWORD`.
+1. Try it out: `python -m monica2neo4j`
+
 
 ## Usage ##
 
 ```console
 $ python -m monica2neo4j --help
-usage: monica2neo4j [-h] [--monica MONICA_BASE_URL] [--neo4j NEO4J_URL]
-                    [--print] [--wipe] [--force]
+usage: monica2neo4j [-h] [--monica MONICA_URL] [--neo4j NEO4J_URL] [--print] [--wipe] [--force]
 
 Copy contact details and relationships from Monica to a Neo4j graph database
 
 optional arguments:
   -h, --help            show this help message and exit
-  --monica MONICA_BASE_URL, -m MONICA_BASE_URL
+  --monica MONICA_URL, -m MONICA_URL
                         HTTP(S) address of the desired Monica instance
   --neo4j NEO4J_URL, -n NEO4J_URL
                         Bolt address for the desired Neo4j instance
   --print, -p           Print the Neo4j queries instead of running them
-  --wipe, -w            Clear the ENTIRE database before populating it from
-                        Monica. ALL nodes and relationships will be removed
+  --wipe, -w            Clear the ENTIRE database before populating it from Monica. ALL nodes and relationships will be removed
   --force, -f           Do not prompt for confirmation of prune or wipe
 
 
